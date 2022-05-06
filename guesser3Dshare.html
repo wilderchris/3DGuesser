@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style >
+           
+
+
+
+
+           *{
+    margin: 0;
+    padding: 0;
+}
+
+html, body{
+    height: 100vh;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+    color: white;
+}
+
+.webgl{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+.container{
+    position: absolute;
+    z-index: 1;
+    width: 200%;
+    height: 50vh;/* location on page*/
+    display: grid;
+    place-content: center;
+}
+.content {
+    display: flex;
+    gap: 4em;
+    width: 100%;
+    padding-top: 3em;
+     position: relative;/* location on page? */
+}
+.content:before{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-bottom: 1px solid white;
+    transform: sccaleX(1);
+}
+h1 {
+    font-size: 4rem;
+    width: 50vw;
+    line-height: 97%;
+    text-align: right;
+}
+h1, p {
+    flex-basis: 0;
+    flex-grow: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+}
+p {
+    font-size: 1.3rem;
+    width: 40vw;
+}
+
+
+		</style>
+	</head>
+	<body>
+        <!-- <canvas class="webgl">
+        </canvas> -->
+
+       <div class="container">
+           <div class="content">
+               <h1 style="text-align: center;">
+                   3D Hex<br> Color Guesser
+                </h1>
+                <p id="generated-hexcode" >
+                    Guess the color, given the Hex Code value   :
+<p ></p><br> <div ></div>
+            </p>
+
+           </div>
+       </div>
+
+		<script src="js/three.js"></script>
+        <script src="js/threex.domevents.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js" integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/CSSRulePlugin.min.js" integrity="sha512-Aa3UvVB5yhH/dNXMt8nGZDD15Xmntq1ODcavfgT8omSLaomrJKYybWczzc6UJYDUAdqR1hmDJ47V4Ux50PPIuw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <script>
+          const content = CSSRulePlugin.getRule('.content:before')
+          const h1 = document.querySelector('h1')
+          const p = document.querySelector('p')
+          const tl = gsap.timeline()
+
+          tl.from(content, { delay: .5, duration: 4, cssRule: {scaleX: 0}})
+            tl.to(h1, { duration: 2, clipPath: 'polygon(0 0, 100% 0, 100% 100%,0% 100%)' }, "-=3")
+            tl.to(p, { duration: 2, clipPath: 'polygon(0 0, 100% 0, 100% 100%,0% 100%)' }, "-=3")
+
+
+      </script>
+      <script>
+/// starrt
+let correctHexCode;
+let allHexCodes;
+let divColors;
+
+
+setup();
+
+
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+const particlesGeo = new THREE.BufferGeometry;
+const particlesCnt = 30000;
+
+
+const posArray = new Float32Array(particlesCnt * 3);
+
+for (let i = 0; i < particlesCnt * 3;i++ ){
+    posArray[i] = ((Math.random() - .5) * 20);//(Math.random() * 5))
+}
+
+particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+const matParticles = new THREE.PointsMaterial( { size: 0.005 } );
+
+const particlesMesh = new THREE.Points(particlesGeo, matParticles);
+scene.add(particlesMesh);
+
+//
+const directionalLight = new THREE.DirectionalLight( 0xffffff );
+directionalLight.position.y = 5;
+directionalLight.position.z = -5;
+scene.add( directionalLight );
+//
+const directionalLight1 = new THREE.DirectionalLight( 0xffffff );
+directionalLight1.position.y = 0;
+directionalLight1.position.z = 1;
+scene.add( directionalLight1 );
+
+
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+
+const geoShape = new THREE.BoxGeometry();
+console.log(correctHexCode);
+let shapeColor = hexToRGB(correctHexCode);
+const matShape = new THREE.MeshStandardMaterial( { color: shapeColor, transparent: true } );
+const shape1 = new THREE.Mesh( geoShape, matShape );
+shape1.position.y = 4;
+//scene.add( shape1 );
+
+
+const geometry = new THREE.BoxGeometry();
+console.log(allHexCodes[0]);
+let colr0 = hexToRGB(allHexCodes[0]);
+const material = new THREE.MeshPhongMaterial( { color: colr0 } );
+const sphere = new THREE.Mesh( geometry, material );
+sphere.position.x = -6;
+scene.add( sphere );
+
+const geometry1 = new THREE.BoxGeometry();
+console.log(allHexCodes[1]);
+let colr1 = hexToRGB(allHexCodes[1]);
+const material1 = new THREE.MeshPhongMaterial( { color: colr1 } );
+const sphere1 = new THREE.Mesh( geometry1, material1 );
+sphere1.position.x = -3;
+scene.add( sphere1 );
+
+const geometry2 = new THREE.BoxGeometry();
+console.log(allHexCodes[2]);
+let colr2 = hexToRGB(allHexCodes[2]);
+const material2 = new THREE.MeshPhongMaterial( { color: colr2 } );
+const sphere2 = new THREE.Mesh( geometry2, material2 );
+sphere2.position.x = 0;
+scene.add( sphere2 );
+
+
+
+const geometry3 = new THREE.BoxGeometry();
+console.log(allHexCodes[3]);
+
+let colr3 = hexToRGB(allHexCodes[3]);
+const material3 = new THREE.MeshPhongMaterial( { color: colr3 } );
+const sphere3 = new THREE.Mesh( geometry3, material3 );
+sphere3.position.x = 3;
+scene.add( sphere3 );
+
+const geometry4 = new THREE.BoxGeometry();
+console.log(allHexCodes[4]);
+
+let colr4 = hexToRGB(allHexCodes[4]);
+const material4 = new THREE.MeshPhongMaterial( { color: colr4 } );
+const sphere4 = new THREE.Mesh( geometry4, material4 );
+sphere4.position.x = 6;
+scene.add( sphere4 );
+
+camera.position.z = 8;
+
+const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
+
+
+
+
+domEvents.addEventListener(sphere, 'click', event => {
+  if ( colr0 == ( hexToRGB(correctHexCode) )){
+    correctAnswer();
+        }else{
+           incorrectAnswer();
+}
+});
+
+domEvents.addEventListener(sphere1, 'click', event => {
+  if ( colr1 == ( hexToRGB(correctHexCode) )){
+    correctAnswer();
+        }else{
+            incorrectAnswer();
+}
+});
+
+domEvents.addEventListener(sphere2, 'click', event => {
+  if ( colr2 == ( hexToRGB(correctHexCode) )){
+    correctAnswer();
+        }else{
+            incorrectAnswer();
+}
+});
+
+domEvents.addEventListener(sphere3, 'click', event => {
+  if ( colr3 == ( hexToRGB(correctHexCode) )){
+    correctAnswer();
+}else{
+    incorrectAnswer();
+}
+});
+
+domEvents.addEventListener(sphere4, 'click', event => {
+  if ( colr4 == ( hexToRGB(correctHexCode) )){
+           correctAnswer();
+        }else{
+            incorrectAnswer();
+}
+});
+
+
+const clock = new THREE.Clock();
+
+document.addEventListener('mousemove', animateParticles)
+
+let mouseX = 0;
+let mouseY = 0;
+
+function animateParticles(event) {
+    mouseY = event.clientY;
+    mouseX = event.clientX;
+}
+
+
+
+function animate() {
+    const elapsedTime = clock.getElapsedTime();
+
+    particlesMesh.rotation.x = -mouseY * (elapsedTime * .00004);
+    particlesMesh.rotation.y = -mouseX * (elapsedTime * .00004);
+
+
+
+    requestAnimationFrame( animate );
+    shape1.rotation.x += .02;
+    shape1.rotation.y += .005;
+
+    sphere.rotation.x += 0.02;
+    sphere.rotation.y += 0.02;
+
+    sphere1.rotation.x += 0.02;
+    sphere1.rotation.y += 0.02;
+
+
+    sphere2.rotation.x += 0.02;
+    sphere2.rotation.y += 0.02;
+
+    sphere3.rotation.x += 0.02;
+    sphere3.rotation.y += 0.02;
+
+    sphere4.rotation.x += 0.02;
+    sphere4.rotation.y += 0.02;
+	renderer.render( scene, camera );
+
+}
+animate();
+
+
+function setup() {
+    
+    let generatedHexCode = document.getElementById('generated-hexcode');
+    correctHexCode = generateNewHexCode();
+    generatedHexCode.innerText += ('  ' + correctHexCode);
+    //generatedHexCode.style.color = correctHexCode;
+
+
+    allHexCodes = [];
+    let correctIndex = Math.floor(Math.random() * 5);
+    allHexCodes[correctIndex] = correctHexCode;
+    for (let i=0; i<5; i++) {
+        if (i !== correctIndex) {
+            allHexCodes[i] = generateNewHexCode();
+        }
+    }
+   // alert( "Below you will find a color value, \n click the box that matches \n" + correctHexCode);
+}
+
+
+
+function generateNewHexCode() {
+    let hexcode = '#';
+    for (let i = 0; i < 6; i++) {
+        let letterOrNumber = Math.floor(Math.random() * 2);
+        if (letterOrNumber === 0)
+            hexcode += '' + Math.floor(Math.random() * 10);
+        else {
+            hexcode += '' + String.fromCharCode(Math.floor(Math.random() * 6) + 65);
+        }
+    }
+    return hexcode;
+}
+
+
+//
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+
+
+function hexToRGB(h) {
+    let r = 0, g = 0, b = 0;
+  
+    // 3 digits
+    if (h.length == 4) {
+      r = "0x" + h[1] + h[1];
+      g = "0x" + h[2] + h[2];
+      b = "0x" + h[3] + h[3];
+  
+    // 6 digits
+    } else if (h.length == 7) {
+      r = "0x" + h[1] + h[2];
+      g = "0x" + h[3] + h[4];
+      b = "0x" + h[5] + h[6];
+    }
+    
+    return "rgb("+ +r + ", " + +g + ", " + +b + ")";
+  }
+//
+function incorrectAnswer() {
+    alert('Sorry, that\'s not the right one! Try again.');
+}
+
+function correctAnswer() {
+    alert('You got it! Nice job!');
+    window.location.reload();
+}
+		</script>
+
+	</body>
+</html>
