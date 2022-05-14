@@ -1,6 +1,8 @@
 # 3DGuesser
  simple three.js hex code color guesser
-Written in Html and Javascript using three.js library
+ 
+Written in Html and Javascript using ![ThreeJS](https://img.shields.io/badge/ThreeJs-black?style=for-the-badge&logo=three.js&logoColor=white)
+ library
 ---
 
 ### :hammer_and_wrench: Work in Progress :
